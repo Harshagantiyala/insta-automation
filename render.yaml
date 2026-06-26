@@ -3,10 +3,18 @@ databases:
   - name: instaflow-db
     plan: free
 
+envVarGroups:
+  - name: instaflow-shared-secrets
+    envVars:
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+
 services:
 
   # -----------------------------------------------------
-  # 2. CACHE & MESSAGE QUEUE (Redis)
+  # 1. CACHE & MESSAGE QUEUE (Redis)
   # -----------------------------------------------------
   - type: redis
     name: instaflow-redis
@@ -14,7 +22,7 @@ services:
     ipAllowList: [] # Internal access only
 
   # -----------------------------------------------------
-  # 3. BACKEND API SERVICE
+  # 2. BACKEND API SERVICE
   # -----------------------------------------------------
   - type: web
     name: instaflow-api
@@ -23,6 +31,8 @@ services:
     buildCommand: npm install
     startCommand: npm start
     rootDir: instaflow/backend
+    envVarGroups:
+      - instaflow-shared-secrets
     envVars:
       - key: NODE_ENV
         value: production
@@ -36,10 +46,6 @@ services:
           name: instaflow-redis
           property: connectionString
       # --- REQUIRED SECRETS (You must fill these out in the Render Dashboard!) ---
-      - key: JWT_SECRET
-        generateValue: true
-      - key: ENCRYPTION_KEY
-        generateValue: true
       - key: FRONTEND_URL
         value: https://instaflow.onrender.com # Placeholder, update after frontend deploys
       - key: META_APP_ID
@@ -52,7 +58,7 @@ services:
         generateValue: true
 
   # -----------------------------------------------------
-  # 4. BACKGROUND WORKER
+  # 3. BACKGROUND WORKER
   # -----------------------------------------------------
   - type: worker
     name: instaflow-worker
@@ -61,6 +67,8 @@ services:
     buildCommand: npm install
     startCommand: npm run worker
     rootDir: instaflow/backend
+    envVarGroups:
+      - instaflow-shared-secrets
     envVars:
       - key: NODE_ENV
         value: production
@@ -73,11 +81,9 @@ services:
           type: redis
           name: instaflow-redis
           property: connectionString
-      - key: ENCRYPTION_KEY
-        sync: false # Render requires manually syncing this in the dashboard so it matches the API
 
   # -----------------------------------------------------
-  # 5. FRONTEND STATIC SITE
+  # 4. FRONTEND STATIC SITE
   # -----------------------------------------------------
   - type: web
     name: instaflow-frontend
