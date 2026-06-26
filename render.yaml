@@ -83,8 +83,9 @@ services:
   # -----------------------------------------------------
   # 4. FRONTEND STATIC SITE
   # -----------------------------------------------------
-  - type: static
+  - type: web
     name: instaflow-frontend
+    runtime: static
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     rootDir: instaflow/frontend
