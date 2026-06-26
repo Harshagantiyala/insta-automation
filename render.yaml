@@ -24,7 +24,7 @@ services:
     env: node
     buildCommand: npm install
     startCommand: npm start
-    rootDir: backend
+    rootDir: instaflow/backend
     envVars:
       - key: NODE_ENV
         value: production
@@ -62,7 +62,7 @@ services:
     env: node
     buildCommand: npm install
     startCommand: npm run worker
-    rootDir: backend
+    rootDir: instaflow/backend
     envVars:
       - key: NODE_ENV
         value: production
@@ -87,7 +87,7 @@ services:
     env: static
     buildCommand: npm install && npm run build
     staticPublishPath: dist
-    rootDir: frontend
+    rootDir: instaflow/frontend
     envVars:
       - key: NODE_ENV
         value: production
