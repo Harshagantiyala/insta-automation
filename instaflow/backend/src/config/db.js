@@ -32,13 +32,9 @@ async function connectDB() {
     await sequelize.authenticate();
     logger.info('[mysql] connected successfully.');
     
-    // Sync models
-    if (config.env !== 'production') {
-      await sequelize.sync();
-      logger.info('[mysql] database schema synchronized.');
-    } else {
-      logger.info('[mysql] skipping schema sync in production (use migrations).');
-    }
+    // Sync models (always synchronize tables since we are not using database migrations)
+    await sequelize.sync();
+    logger.info('[database] database schema synchronized.');
   } catch (err) {
     logger.error(`[mysql] connection or synchronization error: ${err.message}`);
     throw err;
