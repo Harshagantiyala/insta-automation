@@ -1,3 +1,4 @@
+# Render.yaml deployment blueprint
 databases:
   - name: instaflow-db
     plan: free
