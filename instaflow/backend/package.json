@@ -1,0 +1,43 @@
+{
+  "name": "instaflow-backend",
+  "version": "1.0.0",
+  "description": "InstaFlow - Multi-tenant Instagram Automation SaaS (Backend API + Worker)",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "worker": "node src/queues/dmWorker.js",
+    "worker:dev": "nodemon src/queues/dmWorker.js",
+    "worker:fallback": "node src/queues/fallbackWorker.js",
+    "worker:fallback:dev": "nodemon src/queues/fallbackWorker.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^5.12.12",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0",
+    "ioredis": "^5.4.1",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.22.5",
+    "node-cron": "^3.0.3",
+    "pg": "^8.22.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8",
+    "sqlite3": "^6.0.1",
+    "stripe": "^16.9.0",
+    "winston": "^3.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

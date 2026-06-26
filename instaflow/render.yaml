@@ -1,0 +1,98 @@
+services:
+  # -----------------------------------------------------
+  # 1. DATABASE (PostgreSQL)
+  # -----------------------------------------------------
+  - type: psql
+    name: instaflow-db
+    plan: free # Can be upgraded to 'starter' later
+    version: 15
+
+  # -----------------------------------------------------
+  # 2. CACHE & MESSAGE QUEUE (Redis)
+  # -----------------------------------------------------
+  - type: redis
+    name: instaflow-redis
+    plan: free
+    ipAllowList: [] # Internal access only
+
+  # -----------------------------------------------------
+  # 3. BACKEND API SERVICE
+  # -----------------------------------------------------
+  - type: web
+    name: instaflow-api
+    plan: free
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: instaflow-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: instaflow-redis
+          property: connectionString
+      # --- REQUIRED SECRETS (You must fill these out in the Render Dashboard!) ---
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://instaflow.onrender.com # Placeholder, update after frontend deploys
+      - key: META_APP_ID
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: META_OAUTH_REDIRECT_URI
+        value: https://instaflow.onrender.com/connect # Update if your frontend URL changes
+      - key: META_WEBHOOK_VERIFY_TOKEN
+        generateValue: true
+
+  # -----------------------------------------------------
+  # 4. BACKGROUND WORKER
+  # -----------------------------------------------------
+  - type: worker
+    name: instaflow-worker
+    plan: free
+    env: node
+    buildCommand: npm install
+    startCommand: npm run worker
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: instaflow-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: instaflow-redis
+          property: connectionString
+      - key: ENCRYPTION_KEY
+        sync: false # Render requires manually syncing this in the dashboard so it matches the API
+
+  # -----------------------------------------------------
+  # 5. FRONTEND STATIC SITE
+  # -----------------------------------------------------
+  - type: web
+    name: instaflow-frontend
+    plan: free
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    rootDir: frontend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: instaflow-api
+          envVarKey: RENDER_EXTERNAL_URL

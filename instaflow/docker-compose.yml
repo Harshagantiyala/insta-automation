@@ -1,0 +1,75 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: instaflow
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - '3306:3306'
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - '6379:6379'
+
+  # ---------- Backend API server ----------
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      - MYSQL_URI=mysql://root:rootpassword@mysql:3306/instaflow
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mysql
+      - redis
+    ports:
+      - '4000:4000'
+    command: node src/server.js
+
+  # ---------- DM send worker (enforces the 200/hr rate limit) ----------
+  dm-worker:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      - MYSQL_URI=mysql://root:rootpassword@mysql:3306/instaflow
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mysql
+      - redis
+    command: node src/queues/dmWorker.js
+
+  # ---------- Auto-reply fallback worker ----------
+  fallback-worker:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      - MYSQL_URI=mysql://root:rootpassword@mysql:3306/instaflow
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mysql
+      - redis
+    command: node src/queues/fallbackWorker.js
+
+  # ---------- Frontend dashboard ----------
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - '5173:80'
+    depends_on:
+      - api
+
+volumes:
+  mysql_data:
+  redis_data:
