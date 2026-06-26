@@ -59,9 +59,19 @@ async function processFallbackCheck(job) {
 
 async function start() {
   await connectDB();
+  const worker = startFallbackWorker();
 
+  process.on('SIGTERM', async () => {
+    await worker.close();
+    await sequelize.close();
+    process.exit(0);
+  });
+}
+
+function startFallbackWorker(customConnection) {
+  const conn = customConnection || connection;
   const worker = new Worker('auto-reply-fallback', processFallbackCheck, {
-    connection,
+    connection: conn,
     concurrency: 20,
   });
 
@@ -73,15 +83,14 @@ async function start() {
   });
 
   logger.info('[fallback-worker] worker started, listening on queue "auto-reply-fallback"');
+  return worker;
+}
 
-  process.on('SIGTERM', async () => {
-    await worker.close();
-    await sequelize.close();
-    process.exit(0);
+if (require.main === module) {
+  start().catch((err) => {
+    logger.error(`[fallback-worker] fatal startup error: ${err.message}`);
+    process.exit(1);
   });
 }
 
-start().catch((err) => {
-  logger.error(`[fallback-worker] fatal startup error: ${err.message}`);
-  process.exit(1);
-});
+module.exports = { startFallbackWorker, processFallbackCheck };

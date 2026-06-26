@@ -135,10 +135,20 @@ async function processJob(job) {
 
 async function start() {
   await connectDB();
+  const worker = startDmWorker();
 
+  process.on('SIGTERM', async () => {
+    await worker.close();
+    await sequelize.close();
+    process.exit(0);
+  });
+}
+
+function startDmWorker(customConnection) {
+  const conn = customConnection || connection;
   const worker = new Worker('dm-send', processJob, {
-    connection,
-    concurrency: 10, // tune based on Meta API throughput / instance size
+    connection: conn,
+    concurrency: 10,
     settings: {
       backoffStrategy: buildCustomBackoffStrategy(),
     },
@@ -153,15 +163,14 @@ async function start() {
   });
 
   logger.info('[dm-worker] worker started, listening for jobs on queue "dm-send"');
+  return worker;
+}
 
-  process.on('SIGTERM', async () => {
-    await worker.close();
-    await sequelize.close();
-    process.exit(0);
+if (require.main === module) {
+  start().catch((err) => {
+    logger.error(`[dm-worker] fatal startup error: ${err.message}`);
+    process.exit(1);
   });
 }
 
-start().catch((err) => {
-  logger.error(`[dm-worker] fatal startup error: ${err.message}`);
-  process.exit(1);
-});
+module.exports = { startDmWorker, processJob };

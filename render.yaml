@@ -22,7 +22,7 @@ services:
     ipAllowList: [] # Internal access only
 
   # -----------------------------------------------------
-  # 2. BACKEND API SERVICE
+  # 2. BACKEND API SERVICE (Embeds Background Workers in Prod)
   # -----------------------------------------------------
   - type: web
     name: instaflow-api
@@ -57,31 +57,7 @@ services:
         generateValue: true
 
   # -----------------------------------------------------
-  # 3. BACKGROUND WORKER
-  # -----------------------------------------------------
-  - type: worker
-    name: instaflow-worker
-    plan: free
-    env: node
-    buildCommand: npm install
-    startCommand: npm run worker
-    rootDir: instaflow/backend
-    envVars:
-      - fromGroup: instaflow-shared-secrets
-      - key: NODE_ENV
-        value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: instaflow-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: instaflow-redis
-          property: connectionString
-
-  # -----------------------------------------------------
-  # 4. FRONTEND STATIC SITE
+  # 3. FRONTEND STATIC SITE
   # -----------------------------------------------------
   - type: web
     name: instaflow-frontend
