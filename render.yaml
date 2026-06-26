@@ -1,11 +1,9 @@
-services:
-  # -----------------------------------------------------
-  # 1. DATABASE (PostgreSQL)
-  # -----------------------------------------------------
-  - type: psql
-    name: instaflow-db
-    plan: free # Can be upgraded to 'starter' later
+databases:
+  - name: instaflow-db
+    plan: free
     version: 15
+
+services:
 
   # -----------------------------------------------------
   # 2. CACHE & MESSAGE QUEUE (Redis)
