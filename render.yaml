@@ -1,7 +1,6 @@
 databases:
   - name: instaflow-db
     plan: free
-    version: 15
 
 services:
 
