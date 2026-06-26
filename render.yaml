@@ -31,9 +31,8 @@ services:
     buildCommand: npm install
     startCommand: npm start
     rootDir: instaflow/backend
-    envVarGroups:
-      - instaflow-shared-secrets
     envVars:
+      - fromGroup: instaflow-shared-secrets
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
@@ -67,9 +66,8 @@ services:
     buildCommand: npm install
     startCommand: npm run worker
     rootDir: instaflow/backend
-    envVarGroups:
-      - instaflow-shared-secrets
     envVars:
+      - fromGroup: instaflow-shared-secrets
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
