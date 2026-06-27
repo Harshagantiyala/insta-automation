@@ -32,8 +32,8 @@ function verifyWebhookSignature(req, res, next) {
   const isValid = timingSafeEqual(expectedSignature.toLowerCase(), (signatureHeader || '').toLowerCase());
 
   if (!isValid) {
-    logger.warn('[webhook] invalid signature — rejecting request. Expected signature matches: ' + expectedSignature.toLowerCase() + ' vs Header: ' + (signatureHeader || '').toLowerCase());
-    return res.status(401).send('Invalid signature');
+    logger.warn('[webhook] invalid signature — ignoring old/invalid retry request.');
+    return res.status(200).send('Invalid signature');
   }
 
   next();
