@@ -94,6 +94,7 @@ async function processEntry(entry) {
 
   // `changes` carries comments + story mentions; `messaging` carries DMs +
   // story replies. Both can be present in the same entry.
+  logger.info(`[webhook-debug] entry.id=${entry.id}, changes=${JSON.stringify(entry.changes || [])}, messaging=${JSON.stringify(entry.messaging || [])}, time=${entry.time}`);
   for (const change of entry.changes || []) {
     try {
       if (change.field === 'comments') {
