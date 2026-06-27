@@ -24,13 +24,14 @@ function verifyWebhookSignature(req, res, next) {
     return res.status(500).send('Internal signature verification error');
   }
 
+  const appSecretClean = (config.meta.appSecret || '').trim();
   const expectedSignature =
-    'sha256=' + crypto.createHmac('sha256', config.meta.appSecret).update(req.rawBody).digest('hex');
+    'sha256=' + crypto.createHmac('sha256', appSecretClean).update(req.rawBody).digest('hex');
 
-  const isValid = timingSafeEqual(expectedSignature, signatureHeader);
+  const isValid = timingSafeEqual(expectedSignature.toLowerCase(), (signatureHeader || '').toLowerCase());
 
   if (!isValid) {
-    logger.warn('[webhook] invalid signature — rejecting request');
+    logger.warn('[webhook] invalid signature — rejecting request. Expected signature matches: ' + expectedSignature.toLowerCase() + ' vs Header: ' + (signatureHeader || '').toLowerCase());
     return res.status(401).send('Invalid signature');
   }
 

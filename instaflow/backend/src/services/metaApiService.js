@@ -165,12 +165,16 @@ class MetaApiService {
 
   async subscribePageToWebhooks(pageId, pageAccessToken) {
     return withRetry(async () => {
-      const { data } = await axios.post(
+      await axios.post(
         `${GRAPH_BASE}/${pageId}/subscribed_apps`,
-        { subscribed_fields: ['messages'] },
-        { params: { access_token: pageAccessToken } }
+        null,
+        {
+          params: {
+            access_token: pageAccessToken,
+            subscribed_fields: 'feed,mention,comments,story_mentions',
+          },
+        }
       );
-      return data;
     });
   }
 
