@@ -35,7 +35,14 @@ module.exports = {
   meta: {
     appId: required('META_APP_ID'), // <-- INSERT META APP ID in your .env
     appSecret: required('META_APP_SECRET'), // <-- INSERT META APP SECRET in your .env
-    oauthRedirectUri: required('META_OAUTH_REDIRECT_URI'),
+    oauthRedirectUri: (() => {
+      const configured = process.env.META_OAUTH_REDIRECT_URI;
+      if (configured && !configured.includes('placeholder') && !configured.includes('instaflow.onrender.com/connect')) {
+        return configured;
+      }
+      const base = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL || 'http://localhost:4000';
+      return `${base.replace(/\/$/, '')}/api/auth/meta/callback`;
+    })(),
     webhookVerifyToken: required('META_WEBHOOK_VERIFY_TOKEN'),
     graphVersion: process.env.META_GRAPH_API_VERSION || 'v20.0',
   },
