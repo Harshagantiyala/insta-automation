@@ -167,7 +167,8 @@ async function handleMetaOAuthCallback(req, res, next) {
 
     res.redirect(`${config.frontendUrl}/connect?status=success&accounts=${connectedAccounts.length}`);
   } catch (err) {
-    logger.error(`[meta-oauth] callback error: ${err.message}`);
+    const details = err.response?.data ? JSON.stringify(err.response.data) : err.stack || '';
+    logger.error(`[meta-oauth] callback error: ${err.message}. Details: ${details}`);
     res.redirect(`${config.frontendUrl}/connect?status=error`);
   }
 }
