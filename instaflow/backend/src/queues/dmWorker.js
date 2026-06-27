@@ -159,7 +159,8 @@ function startDmWorker(customConnection) {
   });
 
   worker.on('failed', (job, err) => {
-    logger.error(`[dm-worker] job ${job?.id} failed (attempt ${job?.attemptsMade}): ${err.message}`);
+    const details = err.response?.data ? JSON.stringify(err.response.data) : '';
+    logger.error(`[dm-worker] job ${job?.id} failed (attempt ${job?.attemptsMade}): ${err.message}. Details: ${details}`);
   });
 
   logger.info('[dm-worker] worker started, listening for jobs on queue "dm-send"');
