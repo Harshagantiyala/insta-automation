@@ -11,7 +11,25 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: config.frontendUrl, credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const allowedOrigins = [
+      config.frontendUrl,
+      'https://instaflow-frontend.onrender.com',
+      'https://instaflow.onrender.com',
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ];
+    const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.onrender.com');
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy blocked access from origin: ${origin}`));
+    }
+  },
+  credentials: true
+}));
 app.use(morgan(config.env === 'production' ? 'combined' : 'dev'));
 
 // General API rate limiting (separate from the per-IG-account DM rate

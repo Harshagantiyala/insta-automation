@@ -18,7 +18,10 @@ function required(name, fallback) {
 module.exports = {
   env: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '4000', 10),
-  frontendUrl: required('FRONTEND_URL', 'http://localhost:5173'),
+  frontendUrl: (() => {
+    const url = required('FRONTEND_URL', 'http://localhost:5173');
+    return url === 'https://instaflow.onrender.com' ? 'https://instaflow-frontend.onrender.com' : url;
+  })(),
   backendUrl: required('BACKEND_URL', 'http://localhost:4000'),
 
   databaseUrl: process.env.DATABASE_URL || required('MYSQL_URI', 'mysql://root:rootpassword@localhost:3306/instaflow'),
