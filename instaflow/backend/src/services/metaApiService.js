@@ -176,7 +176,7 @@ class MetaApiService {
         {
           params: {
             access_token: pageAccessToken,
-            subscribed_fields: 'feed,mention,comments,story_mentions',
+            subscribed_fields: 'feed,mention',
           },
         }
       );
