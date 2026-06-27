@@ -44,6 +44,9 @@ module.exports = {
       return `${base.replace(/\/$/, '')}/api/auth/meta/callback`;
     })(),
     webhookVerifyToken: required('META_WEBHOOK_VERIFY_TOKEN'),
+    // The new Instagram API has its own app secret used to sign webhook payloads.
+    // Falls back to the Facebook App Secret if not explicitly set.
+    webhookSigningSecret: (process.env.META_INSTAGRAM_APP_SECRET || process.env.META_APP_SECRET || '').trim(),
     graphVersion: process.env.META_GRAPH_API_VERSION || 'v20.0',
   },
 

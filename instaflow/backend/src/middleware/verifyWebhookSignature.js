@@ -24,10 +24,10 @@ function verifyWebhookSignature(req, res, next) {
     return res.status(500).send('Internal signature verification error');
   }
 
-  const appSecretClean = (config.meta.appSecret || '').trim();
-  logger.warn(`[webhook-debug] appSecret length=${appSecretClean.length}, first4="${appSecretClean.substring(0,4)}", last4="${appSecretClean.substring(appSecretClean.length-4)}", rawBody length=${req.rawBody.length}`);
+  const signingSecret = config.meta.webhookSigningSecret;
+  logger.warn(`[webhook-debug] signingSecret length=${signingSecret.length}, first4="${signingSecret.substring(0,4)}", last4="${signingSecret.substring(signingSecret.length-4)}", rawBody length=${req.rawBody.length}`);
   const expectedSignature =
-    'sha256=' + crypto.createHmac('sha256', appSecretClean).update(req.rawBody).digest('hex');
+    'sha256=' + crypto.createHmac('sha256', signingSecret).update(req.rawBody).digest('hex');
 
   const isValid = timingSafeEqual(expectedSignature.toLowerCase(), (signatureHeader || '').toLowerCase());
 
