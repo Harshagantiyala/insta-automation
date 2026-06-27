@@ -63,10 +63,33 @@ async function handleWebhookEvent(req, res) {
 
 async function processEntry(entry) {
   // `entry.id` is the Instagram-scoped Business Account ID for IG webhooks.
-  const account = await InstagramAccount.findOne({ where: { igUserId: entry.id, isActive: true } });
+  // The new Instagram API may send a different ID than the one from the
+  // Graph API's instagram_business_account endpoint, so we fall back to
+  // looking up by facebookPageId as well.
+  let account = await InstagramAccount.findOne({ where: { igUserId: entry.id, isActive: true } });
+
   if (!account) {
-    logger.warn(`[webhook] no active InstagramAccount found for igUserId ${entry.id}`);
-    return;
+    // Fallback: try matching by facebookPageId (entry.id might be the page ID)
+    account = await InstagramAccount.findOne({ where: { facebookPageId: entry.id, isActive: true } });
+  }
+
+  if (!account) {
+    // Last resort: find any active account and check if the webhook ID is
+    // simply a different representation of the same IG account
+    const allAccounts = await InstagramAccount.findAll({ where: { isActive: true } });
+    logger.warn(`[webhook] no account matched entry.id=${entry.id}. Active accounts: ${allAccounts.map(a => `igUserId=${a.igUserId}, pageId=${a.facebookPageId}`).join('; ')}`);
+
+    // If there's exactly one active account, it's almost certainly the right one
+    // (the ID mismatch is due to the new IG API using app-scoped IDs)
+    if (allAccounts.length === 1) {
+      account = allAccounts[0];
+      logger.info(`[webhook] auto-matching single active account igUserId=${account.igUserId} for entry.id=${entry.id}`);
+      // Update the stored igUserId so future lookups are instant
+      await account.update({ igUserId: entry.id });
+      logger.info(`[webhook] updated igUserId from ${account.igUserId} to ${entry.id}`);
+    } else {
+      return;
+    }
   }
 
   // `changes` carries comments + story mentions; `messaging` carries DMs +
