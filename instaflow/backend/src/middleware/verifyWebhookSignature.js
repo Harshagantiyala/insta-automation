@@ -25,6 +25,7 @@ function verifyWebhookSignature(req, res, next) {
   }
 
   const appSecretClean = (config.meta.appSecret || '').trim();
+  logger.warn(`[webhook-debug] appSecret length=${appSecretClean.length}, first4="${appSecretClean.substring(0,4)}", last4="${appSecretClean.substring(appSecretClean.length-4)}", rawBody length=${req.rawBody.length}`);
   const expectedSignature =
     'sha256=' + crypto.createHmac('sha256', appSecretClean).update(req.rawBody).digest('hex');
 
