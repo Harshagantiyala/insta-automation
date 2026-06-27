@@ -6,12 +6,15 @@ const IV_LENGTH = 12; // recommended IV length for GCM
 
 function getKeyBuffer() {
   const key = config.encryptionKey;
-  if (!key || key.length !== 64) {
-    throw new Error(
-      'ENCRYPTION_KEY must be a 64-character hex string (32 bytes). Generate with `openssl rand -hex 32`.'
-    );
+  if (!key) {
+    throw new Error('ENCRYPTION_KEY is required.');
   }
-  return Buffer.from(key, 'hex');
+  // Backward compatibility for valid 64-char hex keys
+  if (key.length === 64 && /^[0-9a-fA-F]+$/.test(key)) {
+    return Buffer.from(key, 'hex');
+  }
+  // Support any string (e.g. Render generated alphanumeric secrets) safely by hashing it
+  return crypto.createHash('sha256').update(key).digest();
 }
 
 /**
