@@ -41,6 +41,9 @@ class MetaApiService {
       ].join(','),
       response_type: 'code',
     });
+    if (config.meta.configId) {
+      params.append('config_id', config.meta.configId);
+    }
     return `https://www.facebook.com/${config.meta.graphVersion}/dialog/oauth?${params.toString()}`;
   }
 
